@@ -25,6 +25,30 @@
             text-align: center;
             color: #333;
         }
+        .switch-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .switch {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        .switch input {
+            display: none; /* Hide the checkbox */
+        }
+        .switch-label {
+            padding: 10px;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+        .light-mode .switch-label.light {
+            background-color: #f9c74f; /* Light mode color */
+        }
+        .dark-mode .switch-label.dark {
+            background-color: #6a4c93; /* Dark mode color */
+        }
         label, select, input, button {
             display: block;
             width: 100%;
@@ -54,151 +78,160 @@
             display: flex;
             gap: 10px;
         }
-        .input-group input {
-            flex: 1;
-        }
-        .dark-mode {
-            background-color: #333;
-            color: white;
-        }
-        .dark-mode button {
-            background-color: #555;
-        }
     </style>
 </head>
-<body>
+<body class="light-mode">
     <div class="container">
         <h1>Run Pacer</h1>
 
-        <label for="raceDistance">Race Distance:</label>
-        <select id="raceDistance">
-            <option value="5k">5K (5 km)</option>
-            <option value="10k">10K (10 km)</option>
-            <option value="halfMarathon">Half Marathon (21.0975 km)</option>
-            <option value="marathon">Marathon (42.195 km)</option>
-            <option value="custom">Custom</option>
-        </select>
-
-        <div id="customDistanceDiv" style="display:none;">
-            <label for="customDistance">Custom Distance:</label>
-            <div class="input-group">
-                <input type="number" id="customDistance" step="0.01" placeholder="Enter distance">
-                <select id="customDistanceUnit">
-                    <option value="km">km</option>
-                    <option value="miles">miles</option>
-                </select>
-            </div>
+        <div class="switch-container">
+          <div class="switch" id="darkModeSwitch">
+              <span class="switch-label light" title="Light Mode">☀️</span>
+              <input type="checkbox" id="darkModeToggle">
+          </div>
+          <div class="switch" id="unitSwitch">
+              <span class="switch-label km" title="Kilometers">🌍</span>
+              <input type="checkbox" id="unitToggle">
+          </div>
         </div>
 
-        <label for="paceType">Select Pace Type:</label>
-        <select id="paceType">
-            <option value="runPace">Enter Your Run Pace</option>
-            <option value="finishTime">Enter Your Finish Time</option>
-        </select>
+        <h2>Do you want to calculate your:</h2>
+        
+        <button id="runPaceButton">Run Pace</button>
+        <button id="finishTimeButton">Finish Time</button>
 
-        <div id="paceInputs">
-            <label>Pace:</label>
-            <div class="input-group">
-                <input type="number" id="paceMinutes" min="0" placeholder="Minutes">
-                <input type="number" id="paceSeconds" min="0" max="59" placeholder="Seconds">
-                <fieldset style="display:inline-block; margin-left:auto;">
-                    <legend>Per:</legend>
-                    <label><input type="radio" name="paceUnit" value="km" checked> km</label>
-                    <label><input type="radio" name="paceUnit" value="mile"> mile</label>
-                </fieldset>
-            </div>
-        </div>
+        <div id="inputSection" style="display:none;">
+          <h3 id="inputTitle"></h3>
+          <div id="paceInputs" style="display:none;">
+              <label>Enter your estimated Finish Time:</label>
+              <div class="input-group">
+                  <input type="number" id="paceHours" min="0" placeholder="Hours">
+                  <input type="number" id="paceMinutes" min="0" placeholder="Minutes">
+                  <input type="number" id="paceSeconds" min="0" placeholder="Seconds">
+              </div>
+          </div>
 
-        <div id="finishTimeInputs" style="display:none;">
-            <label>Finish Time:</label>
-            <div class="input-group">
-                <input type="number" id="finishHours" min="0" placeholder="Hours">
-                <input type="number" id="finishMinutes" min="0" max="59" placeholder="Minutes">
-                <input type="number" id="finishSeconds" min="0" max="59" placeholder="Seconds">
-            </div>
-        </div>
+          <div id="finishTimeInputs" style="display:none;">
+              <label>Enter your Run Pace:</label>
+              <div class="input-group">
+                  <input type="number" id="finishPaceMinutes" min="0" placeholder="Minutes">
+                  <input type="number" id="finishPaceSeconds" min="0" placeholder="Seconds">
+              </div>
+          </div>
 
-        <button id="calculateButton">Calculate Finish Time</button>
+          <label for="raceDistance">Race Distance:</label>
+          <select id="raceDistance">
+              <option value="5k">5K</option>
+              <option value="10k">10K</option>
+              <option value="halfMarathon">Half Marathon</option>
+              <option value="marathon">Marathon</option>
+              <option value="custom">Custom</option>
+          </select>
 
-        <div id="result"></div>
+          <div id="customDistanceDiv" style="display:none;">
+              <label for="customDistance">Custom Distance:</label>
+              <div class="input-group">
+                  <input type="number" id="customDistance" step=".01" placeholder='Enter distance'>
+                  <select id='customDistanceUnit'>
+                      <option value='km'>km</option>
+                      <option value='miles'>miles</option>
+                  </select>
+              </div>
+          </div>
 
-        <!-- Dark Mode Toggle -->
-        <button onclick='toggleDarkMode()'>Toggle Dark Mode</button>
+          <button id='calculateButton'>Calculate Finish Time</button>
+
+          <div id='result'></div>
+      </div>
+
     </div>
 
     <script>
-        function calculate() {
-            const paceType = document.getElementById('paceType').value;
+      function calculate() {
+          const isKm = !document.getElementById('unitToggle').checked; // true if km is selected
+          const raceDistance = document.getElementById('raceDistance').value;
 
-            let distance = parseFloat(document.getElementById('customDistance').value) || 
-                           (document.getElementById('raceDistance').value === '5k' ? 5 :
-                            document.getElementById('raceDistance').value === '10k' ? 10 :
-                            document.getElementById('raceDistance').value === 'halfMarathon' ? 21.0975 :
-                            document.getElementById('raceDistance').value === 'marathon' ? 42.195 : 
-                            null);
+          let distance = parseFloat(document.getElementById('customDistance').value) || 
+                         (raceDistance === '5k' ? 5 :
+                          raceDistance === '10k' ? 10 :
+                          raceDistance === 'halfMarathon' ? 21.0975 :
+                          raceDistance === 'marathon' ? 42.195 : 
+                          null);
 
-           if (document.getElementById('raceDistance').value === 'custom') {
-               const distanceUnit = document.getElementById('customDistanceUnit').value;
-               if (distanceUnit === 'miles') {
-                   distance *= 1.60934; // Convert miles to km
-               }
-           }
+          if (raceDistance === 'custom') {
+              const distanceUnit = document.getElementById('customDistanceUnit').value;
 
-           if (paceType === 'runPace') {
-               const paceMinutes = parseInt(document.getElementById('paceMinutes').value) || 0;
-               const paceSeconds = parseInt(document.getElementById('paceSeconds').value) || 0;
+              if (distanceUnit === 'miles' && isKm) {
+                  distance *= 1.60934; // Convert miles to km
+              } else if (distanceUnit === 'km' && !isKm) {
+                  distance /= 1.60934; // Convert km to miles
+              }
+          }
 
-               const pacePerKm = paceMinutes * 60 + paceSeconds; // Total seconds per km
+          if (document.getElementById('runPaceButton').classList.contains('active')) { // Calculate Finish Time
+              const paceHours = parseInt(document.getElementById('paceHours').value) || 0;
+              const paceMinutes = parseInt(document.getElementById('paceMinutes').value) || 0;
+              const paceSeconds = parseInt(document.getElementById('paceSeconds').value) || 0;
 
-               const totalSeconds = pacePerKm * distance; // Total time in seconds
-               const hours = Math.floor(totalSeconds / 3600);
-               const minutes = Math.floor((totalSeconds % 3600) / 60);
-               const seconds = Math.round(totalSeconds % 60);
+              const totalPaceInSeconds = (paceHours * 3600) + (paceMinutes * 60) + paceSeconds; // Total seconds
 
-               document.getElementById('result').textContent = `Your Finish Time is ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-               document.getElementById('calculateButton').textContent = "Calculate Finish Time";
-           } else { // finishTime
-               const finishHours = parseInt(document.getElementById('finishHours').value) || 0;
-               const finishMinutes = parseInt(document.getElementById('finishMinutes').value) || 0;
-               const finishSeconds = parseInt(document.getElementById('finishSeconds').value) || 0;
+              const totalTimeInSeconds = totalPaceInSeconds * distance; // Total time in seconds
+              const hours = Math.floor(totalTimeInSeconds / 3600);
+              const minutes = Math.floor((totalTimeInSeconds % 3600) / 60);
+              const seconds = Math.round(totalTimeInSeconds % 60);
 
-               const totalFinishTimeInSeconds = finishHours * 3600 + finishMinutes * 60 + finishSeconds;
+              document.getElementById('result').textContent = `Your Finish Time is ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+              document.getElementById('calculateButton').textContent = "Calculate Finish Time";
+          } else { // Calculate Run Pace
+              const finishPaceMinutes = parseInt(document.getElementById('finishPaceMinutes').value) || 0;
+              const finishPaceSeconds = parseInt(document.getElementById('finishPaceSeconds').value) || 0;
 
-               const pacePerKm = totalFinishTimeInSeconds / distance; // Total seconds per km
-               const paceMinutes = Math.floor(pacePerKm / 60);
-               const paceSeconds = Math.round(pacePerKm % 60);
+              const totalFinishTimeInSeconds = (finishPaceMinutes * 60) + finishPaceSeconds; // Total seconds
 
-               document.getElementById('result').textContent = `Your Run Pace is ${paceMinutes}:${paceSeconds.toString().padStart(2, '0')} per km`;
-               document.getElementById('calculateButton').textContent = "Calculate Run Pace";
-           }
-       }
+              const pacePerKm = totalFinishTimeInSeconds / distance; // Total seconds per km
+              const paceMinutes = Math.floor(pacePerKm / 60);
+              const paceSeconds = Math.round(pacePerKm % 60);
 
-       document.getElementById('raceDistance').addEventListener('change', function() {
-           const customDistanceDiv = document.getElementById('customDistanceDiv');
-           customDistanceDiv.style.display = this.value === 'custom' ? 'block' : 'none';
-       });
+              document.getElementById('result').textContent = `Your Run Pace is ${paceMinutes}:${paceSeconds.toString().padStart(2, '0')} per ${isKm ? 'km' : 'mile'}`;
+              document.getElementById('calculateButton').textContent = "Calculate Run Pace";
+          }
+      }
 
-       document.getElementById('paceType').addEventListener('change', function() {
-           const paceInputs = document.getElementById('paceInputs');
-           const finishTimeInputs = document.getElementById('finishTimeInputs');
-           if (this.value === 'runPace') {
-               paceInputs.style.display = 'block';
-               finishTimeInputs.style.display = 'none';
-           } else {
-               paceInputs.style.display = 'none';
-               finishTimeInputs.style.display = 'block';
-           }
-       });
+      document.getElementById('darkModeToggle').addEventListener('change', function() {
+          document.body.classList.toggle("dark-mode");
+      });
 
-       document.getElementById('calculateButton').addEventListener('click', calculate);
+      document.getElementById('unitToggle').addEventListener('change', function() {
+          const isKm = !this.checked; // true if km is selected
+          document.querySelectorAll('.unit-label').forEach(label => label.textContent = isKm ? '🌍' : '🌎');
+      });
 
-       // Dark Mode Toggle Functionality
-       function toggleDarkMode() {
-           document.body.classList.toggle("dark-mode");
-       }
+      document.getElementById('runPaceButton').addEventListener('click', function() {
+          this.classList.add('active');
+          document.getElementById('finishTimeButton').classList.remove('active');
+          
+          document.getElementById('inputTitle').textContent = "Enter your estimated Finish Time:";
+          document.getElementById('paceInputs').style.display = 'block';
+          document.getElementById('finishTimeInputs').style.display = 'none';
+          
+          document.getElementById('inputSection').style.display = 'block';
+      });
 
-       // Service Worker Registration
-       if ('serviceWorker' in navigator) {
+      document.getElementById('finishTimeButton').addEventListener('click', function() {
+          this.classList.add('active');
+          document.getElementById('runPaceButton').classList.remove('active');
+          
+          document.getElementById('inputTitle').textContent = "Enter your Run Pace:";
+          document.getElementById('finishTimeInputs').style.display = 'block';
+          document.getElementById('paceInputs').style.display = 'none';
+          
+          document.getElementById('inputSection').style.display = 'block';
+      });
+
+      document.getElementById('calculateButton').addEventListener('click', calculate);
+
+      // Service Worker Registration
+      if ('serviceWorker' in navigator) {
            window.addEventListener('load', function() {
                navigator.serviceWorker.register('/sw.js').then(function(registration) {
                    console.log('ServiceWorker registration successful with scope:', registration.scope);
