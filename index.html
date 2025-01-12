@@ -220,7 +220,6 @@
                const seconds = Math.round(totalTimeInSeconds % 60);
 
                document.getElementById('result').textContent = `Your Finish Time is ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-               document.getElementById('calculateButton').textContent = "Calculate Finish Time";
            } else { // Calculate Finish Time
                const finishPaceMinutes = parseInt(document.getElementById('finishPaceMinutes').value) || 0;
                const finishPaceSeconds = parseInt(document.getElementById('finishPaceSeconds').value) || 0;
@@ -232,7 +231,6 @@
                const paceSeconds = Math.round(pacePerKm % 60);
 
                document.getElementById('result').textContent = `Your Run Pace is ${paceMinutes}:${paceSeconds.toString().padStart(2, '0')} per ${isKm ? 'km' : 'mile'}`;
-               document.getElementById('calculateButton').textContent = "Calculate Run Pace";
            }
       }
 
