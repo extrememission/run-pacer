@@ -13,6 +13,10 @@
             color: #333;
             transition: background-color 0.3s, color 0.3s;
         }
+        body.dark-mode {
+            background-color: #333;
+            color: white;
+        }
         .container {
             max-width: 600px;
             margin: 0 auto;
@@ -23,7 +27,6 @@
         }
         h1 {
             text-align: center;
-            color: #333;
         }
         .switch-container {
             display: flex;
@@ -31,7 +34,6 @@
             margin-bottom: 20px;
         }
         .switch {
-            cursor: pointer;
             display: flex;
             align-items: center;
         }
@@ -39,15 +41,14 @@
             display: none; /* Hide the checkbox */
         }
         .switch-label {
+            cursor: pointer;
             padding: 10px;
-            border-radius: 50%;
+            border-radius: 20px;
+            background-color: #ddd;
             transition: background-color 0.3s;
         }
-        .light-mode .switch-label.light {
-            background-color: #f9c74f; /* Light mode color */
-        }
-        .dark-mode .switch-label.dark {
-            background-color: #6a4c93; /* Dark mode color */
+        .switch-label.active {
+            background-color: #4CAF50; /* Active color */
         }
         label, select, input, button {
             display: block;
@@ -74,10 +75,6 @@
             margin-top: 20px;
             font-weight: bold;
         }
-        .input-group {
-            display: flex;
-            gap: 10px;
-        }
     </style>
 </head>
 <body class="light-mode">
@@ -86,11 +83,11 @@
 
         <div class="switch-container">
           <div class="switch" id="darkModeSwitch">
-              <span class="switch-label light" title="Light Mode">☀️</span>
+              <label class="switch-label" for="darkModeToggle">Light Mode</label>
               <input type="checkbox" id="darkModeToggle">
           </div>
           <div class="switch" id="unitSwitch">
-              <span class="switch-label km" title="Kilometers">🌍</span>
+              <label class="switch-label" for="unitToggle">KM</label>
               <input type="checkbox" id="unitToggle">
           </div>
         </div>
@@ -102,9 +99,10 @@
 
         <div id="inputSection" style="display:none;">
           <h3 id="inputTitle"></h3>
+
           <div id="paceInputs" style="display:none;">
               <label>Enter your estimated Finish Time:</label>
-              <div class="input-group">
+              <div>
                   <input type="number" id="paceHours" min="0" placeholder="Hours">
                   <input type="number" id="paceMinutes" min="0" placeholder="Minutes">
                   <input type="number" id="paceSeconds" min="0" placeholder="Seconds">
@@ -113,7 +111,7 @@
 
           <div id="finishTimeInputs" style="display:none;">
               <label>Enter your Run Pace:</label>
-              <div class="input-group">
+              <div>
                   <input type="number" id="finishPaceMinutes" min="0" placeholder="Minutes">
                   <input type="number" id="finishPaceSeconds" min="0" placeholder="Seconds">
               </div>
@@ -130,7 +128,7 @@
 
           <div id="customDistanceDiv" style="display:none;">
               <label for="customDistance">Custom Distance:</label>
-              <div class="input-group">
+              <div>
                   <input type="number" id="customDistance" step=".01" placeholder='Enter distance'>
                   <select id='customDistanceUnit'>
                       <option value='km'>km</option>
@@ -203,7 +201,6 @@
 
       document.getElementById('unitToggle').addEventListener('change', function() {
           const isKm = !this.checked; // true if km is selected
-          document.querySelectorAll('.unit-label').forEach(label => label.textContent = isKm ? '🌍' : '🌎');
       });
 
       document.getElementById('runPaceButton').addEventListener('click', function() {
