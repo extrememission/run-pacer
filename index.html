@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Running Pace Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label, select, input, button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        input, select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Running Pace Calculator</h1>
+        <label for="raceType">Race Type:</label>
+        <select id="raceType">
+            <option value="5k">5K</option>
+            <option value="10k">10K</option>
+            <option value="halfMarathon">Half Marathon</option>
+            <option value="marathon">Marathon</option>
+            <option value="custom">Custom</option>
+        </select>
+        <div id="customDistanceDiv" style="display:none;">
+            <label for="customDistance">Custom Distance (km):</label>
+            <input type="number" id="customDistance" step="0.01">
+        </div>
+        <label for="hours">Hours:</label>
+        <input type="number" id="hours" min="0">
+        <label for="minutes">Minutes:</label>
+        <input type="number" id="minutes" min="0" max="59">
+        <label for="seconds">Seconds:</label>
+        <input type="number" id="seconds" min="0" max="59">
+        <button onclick="calculatePace()">Calculate Pace</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function calculatePace() {
+            const raceType = document.getElementById('raceType').value;
+            const hours = parseInt(document.getElementById('hours').value) || 0;
+            const minutes = parseInt(document.getElementById('minutes').value) || 0;
+            const seconds = parseInt(document.getElementById('seconds').value) || 0;
+
+            let distance;
+            switch(raceType) {
+                case '5k': distance = 5; break;
+                case '10k': distance = 10; break;
+                case 'halfMarathon': distance = 21.0975; break;
+                case 'marathon': distance = 42.195; break;
+                case 'custom':
+                    distance = parseFloat(document.getElementById('customDistance').value);
+                    if (!distance) {
+                        alert('Please enter a valid custom distance.');
+                        return;
+                    }
+                    break;
+            }
+
+            const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+            const pacePerKm = totalSeconds / distance;
+            const paceMinutes = Math.floor(pacePerKm / 60);
+            const paceSeconds = Math.round(pacePerKm % 60);
+
+            const resultElement = document.getElementById('result');
+            resultElement.textContent = `Your pace is ${paceMinutes}:${paceSeconds.toString().padStart(2, '0')} per km`;
+        }
+
+        document.getElementById('raceType').addEventListener('change', function() {
+            const customDistanceDiv = document.getElementById('customDistanceDiv');
+            customDistanceDiv.style.display = this.value === 'custom' ? 'block' : 'none';
+        });
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
