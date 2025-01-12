@@ -197,10 +197,12 @@
 
       document.getElementById('darkModeToggle').addEventListener('change', function() {
           document.body.classList.toggle("dark-mode");
+          this.nextElementSibling.textContent = this.checked ? "Dark Mode" : "Light Mode"; // Change label text
       });
 
       document.getElementById('unitToggle').addEventListener('change', function() {
           const isKm = !this.checked; // true if km is selected
+          this.nextElementSibling.textContent = isKm ? "Miles" : "KM"; // Change label text
       });
 
       document.getElementById('runPaceButton').addEventListener('click', function() {
